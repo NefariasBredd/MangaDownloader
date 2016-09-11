@@ -1,0 +1,182 @@
+﻿<Window x:Class="MangaDownloader.Views.MangaManagerView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:localViewModels="clr-namespace:MangaDownloader.ViewModels"
+        xmlns:local="clr-namespace:MangaDownloader.Views"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        mc:Ignorable="d"
+        Title="Manga Manager" Height="600" Width="800" Background="Maroon">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    
+    <Window.Resources>
+        <Storyboard x:Key="loadingBlink" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="loadingBlock"
+                                     Storyboard.TargetProperty="Opacity"
+                                     From="1"
+                                     To="0.1"
+                                     Duration="0:0:1"
+                                     AutoReverse="True"
+                                     RepeatBehavior="100x"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <localViewModels:MangaManagerViewModel/>
+    </Window.DataContext>
+    
+    <DockPanel>
+        <TabControl HorizontalAlignment="Stretch">
+            <TabItem Header="Add to library new manga titles">
+                <!--  Add new manga to your library  -->
+
+                <Grid x:Name="gDownloadManga" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Grid.Row="1">
+                        <TextBlock Text="Choose manga source:"/>
+                        <ComboBox Width="200" Height="30" Margin="5" SelectedItem="{Binding SelectedMangaSource}" ItemsSource="{Binding MangaSources}"/>
+                        <TextBlock Text="Manga name:" Visibility="{Binding MangaNameVisibility}"/>
+                        <TextBox Width="200" Height="30" Text="{Binding FilterMangaName, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding MangaNameVisibility}"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="loadingBlock" Grid.Row="2"
+                   Text="Downloading manga names..." Foreground="Firebrick" HorizontalAlignment="Center" FontSize="24" 
+                   IsVisibleChanged="loadingBlock_IsVisibleChanged"  Visibility="{Binding LoadMangaListVisibility}">
+                    </TextBlock>
+
+                    <ListView Grid.Row="2" Margin="4" x:Name="lvMangaList" Visibility="{Binding MangaListVisibility}" ItemsSource="{Binding MangaListSource}" SelectedValue="{Binding SelectedMangaName}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Background="AliceBlue">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="500"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="200"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock x:Name="mangaName" HorizontalAlignment="Left" Margin="10,0,10,0" FontSize="16" FontWeight="Black" Grid.Column="0" Text="{Binding Value}"/>
+                                    <Button HorizontalAlignment="Center" Height="40" Width="180" Content="Add to your library" Grid.Column="2" Visibility="Hidden" Name="AddButton" 
+                                    Command="{Binding Path=DataContext.AddMangaToLibraryCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding ElementName=mangaName, Path=Text}"/>
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}}" Value="True">
+                                        <Setter TargetName="AddButton" Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Manage my manga titles">
+                <Grid x:Name="gBrowseLibrary">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ListView Grid.Row="1" Margin="7" x:Name="lvMangaLibrary" ItemsSource="{Binding MangaListLibrary}" >
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Background="AliceBlue">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="300"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="200"/>
+                                        <!--<ColumnDefinition Width="50"/>-->
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" HorizontalAlignment="Left" Margin="5,0,0,0" FontSize="12" FontWeight="Black" Grid.Column="0" Text="{Binding MangaName}"/>
+                                    <!--<TextBlock Grid.Row="1" HorizontalAlignment="Left" Margin="5,0,5,0" FontSize="8" Grid.Column="0" Text="Downloaded chapters:"/>-->
+                                    <TextBlock Grid.Row="1" HorizontalAlignment="Left" Margin="5,0,5,0" FontSize="8" Grid.Column="0">
+                                        <Run Text="Downloaded chapters: "/>
+                                        <Run Text="{Binding Path=DownloadedChapters, Mode=TwoWay}"/>
+                                        <Run Text="/"/>
+                                        <Run Text="{Binding Path=Chapters.Count, Mode=OneWay}"/>
+                                    </TextBlock>
+
+                                    
+                                    <Grid Grid.RowSpan="2" Grid.Column="2" Visibility="Hidden" Name="gMangaDetails">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="34"/>
+                                            <ColumnDefinition Width="34"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <Button HorizontalAlignment="Center" Margin="2" Height="46" Width="46" Grid.Column="0" Grid.RowSpan="2" Name="bDownloadButton" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DownloadMangaCommand}" CommandParameter="{Binding Path=MangaName}">
+                                            <Image Source="/MangaDownloader;component/Images/download.png"/>
+                                        </Button>
+
+                                        <Button HorizontalAlignment="Center" Margin="2" Height="30" Width="30" Grid.Column="2" Grid.RowSpan="2" Name="bDeleteManga" Padding="0" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteMangaFromLibrary}" CommandParameter="{Binding Path=MangaName}">
+                                            <Image Source="/MangaDownloader;component/Images/TrashBin.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                        </Button>
+                                        <Button HorizontalAlignment="Center" Margin="2" Height="30" Width="30" Grid.Column="3" Grid.RowSpan="2" Name="bOpenMangaDirectory" Padding="0"
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.OpenMangaInExplorerCommand}" CommandParameter="{Binding Path=MangaName}">
+                                            <Image Source="/MangaDownloader;component/Images/directory.png"/>
+                                        </Button>
+                                    </Grid>
+                                    
+                                    
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}}" Value="True">
+                                        <Setter TargetName="gMangaDetails" Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Options">
+                <Grid x:Name="gOptions">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="170"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Path to your manga library:" HorizontalAlignment="Left" />
+                    <TextBox HorizontalAlignment="Stretch" Height="22" VerticalAlignment="Center" Grid.ColumnSpan="2" Grid.Column="1" Text="{Binding MangaLibraryFolder}" IsEnabled="False" />
+                    <Button x:Name="bBrowse" Grid.Column="3" Content="Browse..." Height="25" 
+                            Command="{Binding SelectDefaultLibraryFolderCommand}" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+        
+    </DockPanel>
+</Window>

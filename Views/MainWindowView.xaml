@@ -1,0 +1,76 @@
+﻿<Window x:Class="MangaDownloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:nc="clr-namespace:MangaDownloader.Helpers"
+        xmlns:local="clr-namespace:MangaDownloader"
+        xmlns:localViewModels="clr-namespace:MangaDownloader.ViewModels"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="400" Background="SteelBlue">
+
+    <Window.Resources>
+        <Storyboard x:Key="loadingBlink" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="loadingBlock"
+                                     Storyboard.TargetProperty="Opacity"
+                                     From="1"
+                                     To="0.1"
+                                     Duration="0:0:1"
+                                     AutoReverse="True"
+                                     RepeatBehavior="100x"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <localViewModels:MainWindowViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Choose manga source:" />
+        <ComboBox x:Name="cbMangaSources" Grid.Row="1" Grid.Column="1" 
+                  ItemsSource="{Binding MangaSources}" SelectedItem="{Binding SelectedSource}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Manga name:" Visibility="{Binding MangaNameVisibility}"/>
+        <TextBox x:Name="tbMangaName" Text="{Binding FilterMangaName, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding MangaNameVisibility}" Grid.Row="2" Grid.Column="1"/>
+
+        <TextBlock x:Name="loadingBlock" Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                   Text="Downloading manga list..." Foreground="Firebrick" HorizontalAlignment="Center" FontSize="24" 
+                   IsVisibleChanged="TextBlock_IsVisibleChanged" Visibility="{Binding LoadingMangaListVisibility}">
+        </TextBlock>
+
+        <ListView Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                  ItemsSource="{Binding MangaList}" SelectedItem="{Binding MangaListSelectedItem}" Visibility="{Binding MangaListViewVisibility}">
+            <ListView.Resources>
+                <Style TargetType="GridViewColumnHeader">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </ListView.Resources>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel Height="35" HorizontalAlignment="Stretch" Background="DeepSkyBlue">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding Value}" />
+                        <Button DockPanel.Dock="Right" Content="Add to my library}" />
+                    </DockPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <!--<ListView.View>
+                <GridView>                    
+                    <GridViewColumn Header="Value" Width="1000" DisplayMemberBinding="{Binding Value}"/>
+                </GridView>
+            </ListView.View>-->
+        </ListView>
+
+    </Grid>
+</Window>
